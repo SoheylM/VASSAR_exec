@@ -36,14 +36,15 @@ public class AppServer {
         initOnce();
 
         int port = getEnvInt("PORT", 8080);
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        String host = getEnvStr("HOST", "0.0.0.0");
+        HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
         server.createContext("/healthz", exchange -> respondJson(exchange, 200, Collections.singletonMap("status","ok")));
         server.createContext("/.well-known/ready", exchange -> respondPlain(exchange, 200, "ready"));
         server.createContext("/evaluate", new EvaluateHandler());
         server.createContext("/initialize", new InitializeHandler()); // <-- NEW
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
-        System.out.println("Evaluation server listening on port " + port);
+        System.out.println("Evaluation server listening on http://" + host + ":" + port);
     }
 
     private static synchronized void initOnce() {
